@@ -104,9 +104,18 @@ class GenericLLMProvider:
             _check_pkg("langchain_openai")
             from langchain_openai import AzureChatOpenAI
 
+            # Map model to azure_deployment as required
             if "model" in kwargs:
                 model_name = kwargs.get("model", None)
                 kwargs = {"azure_deployment": model_name, **kwargs}
+
+            # Inject Azure OpenAI required parameters from environment if not present
+            if "azure_endpoint" not in kwargs and os.environ.get("AZURE_OPENAI_ENDPOINT"):
+                kwargs["azure_endpoint"] = os.environ["AZURE_OPENAI_ENDPOINT"]
+            if "openai_api_key" not in kwargs and os.environ.get("AZURE_OPENAI_API_KEY"):
+                kwargs["openai_api_key"] = os.environ["AZURE_OPENAI_API_KEY"]
+            if "openai_api_version" not in kwargs and os.environ.get("AZURE_OPENAI_API_VERSION"):
+                kwargs["openai_api_version"] = os.environ["AZURE_OPENAI_API_VERSION"]
 
             llm = AzureChatOpenAI(**kwargs)
         elif provider == "cohere":
